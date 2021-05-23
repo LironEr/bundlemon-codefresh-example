@@ -1,0 +1,43 @@
+version: "1.0"
+
+steps:
+  main_clone:
+    title: "Cloning repository"
+    type: "git-clone"
+    repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
+    revision: "${{CF_REVISION}}"
+    git: "github"
+
+  install:
+    title: "Install dependencies"
+    image: "node:14"
+    environment:
+      - NPM_CONFIG_CACHE=${{CF_VOLUME_PATH}}/.cache/npm
+      - YARN_CACHE_FOLDER=${{CF_VOLUME_PATH}}/.cache/yarn
+    commands:
+      - yarn
+
+  build:
+    title: "Build"
+    image: "node:14"
+    commands:
+      - yarn build
+
+  bundlemon:
+    title: "Run BundleMon"
+    image: "node:14"
+    environment:
+      - BUNDLEMON_PROJECT_ID=${{BUNDLEMON_PROJECT_ID}}
+      - BUNDLEMON_PROJECT_APIKEY=${{BUNDLEMON_PROJECT_APIKEY}}
+    commands:
+      - yarn bundlemon
+
+  deploy:
+    title: "Deploy"
+    image: "node:14"
+    commands:
+      - echo "deploy..."
+    when:
+      branch:
+        only:
+          - main
